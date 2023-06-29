@@ -7,6 +7,7 @@
 ```bash
 composer require annotations
 composer require symfony/maker-bundle --dev
+composer require logger
 ```
 
 ### Next
