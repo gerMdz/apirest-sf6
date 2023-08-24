@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Libro;
+use App\Repository\LibroRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -30,30 +33,72 @@ class LibraryController extends AbstractController
         ]);
     }
 
-    #[Route('/library/listado', name: 'app_library_listado')]
-    public function list(Request $request): JsonResponse
+    #[Route('/libro', name: 'app_library_listado')]
+    public function list(Request $request, LibroRepository $libroRepository): JsonResponse
     {
 
-        $title = $request->get('titulo', 'Los archivos de la tormenta');
-
-        $this->logger->info('Se llama a la acción');
+        $this->logger->info('Listando cosas');
+        $libros = $libroRepository->findAll();
         $response = new JsonResponse();
+        $arrayLibros = [];
+
+        foreach ($libros as $libro) {
+            $arrayLibros[] = [
+                'id' => $libro->getId(),
+                'title' => $libro->getTitle(),
+                'image' => $libro->getImage(),
+            ];
+        }
+
+        $response->setData(
+            [
+                'success' => true,
+                'data' => $arrayLibros
+            ]
+        );
+
+
+        return $response;
+
+    }
+
+    /**
+     * @param Request $request
+     * @param EntityManagerInterface $entityManager
+     * @return JsonResponse
+     */
+    #[Route('/libro/crear', name: 'app_libro_crear')]
+    public function crearLibro(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $libro = new Libro();
+        $response = new JsonResponse();
+
+        $title = $request->get('title', null);
+
+        if (empty($title)) {
+            $response->setData([
+                    'success' => false,
+                    'error' => 'El título no puede se nulo',
+                    'data' => null
+                ]
+            );
+            return $response;
+        }
+        $libro->setTitle($title)
+            ->setImage('');
+
+        $entityManager->persist($libro);
+        $entityManager->flush();
+
+
         $response->setData([
                 'success' => true,
                 'data' => [
                     [
-                        'id' => 1,
-                        'title' => 'El imperio final'
+                        'id' => $libro->getId(),
+                        'title' => $libro->getTitle()
 
                     ],
-                    [
-                        'id' => 2,
-                        'title' => 'El héroe de las eras'
-                    ],
-                    [
-                        'id' => 3,
-                        'title' => $title
-                    ]
                 ]
             ]
         );

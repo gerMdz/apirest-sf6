@@ -11,3 +11,4 @@
 .idea
 /.idea
 /.php-version
+/migrations/
