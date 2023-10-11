@@ -7,9 +7,11 @@
         "php": ">=8.0.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "doctrine/annotations": "*",
         "doctrine/doctrine-bundle": "^2.10",
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.16",
+        "friendsofsymfony/rest-bundle": "^3.6",
         "sensio/framework-extra-bundle": "^6.2",
         "symfony/console": "5.4.*",
         "symfony/dotenv": "5.4.*",
@@ -17,8 +19,13 @@
         "symfony/framework-bundle": "5.4.*",
         "symfony/monolog-bundle": "^3.8",
         "symfony/runtime": "5.4.*",
+        "symfony/serializer": "5.4.*",
+        "symfony/twig-bundle": "5.4.*",
+        "symfony/validator": "5.4.*",
         "symfony/web-profiler-bundle": "5.4.*",
-        "symfony/yaml": "5.4.*"
+        "symfony/yaml": "5.4.*",
+        "twig/extra-bundle": "^2.12|^3.0",
+        "twig/twig": "^2.12|^3.0"
     },
     "config": {
         "allow-plugins": {
