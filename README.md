@@ -12,4 +12,4 @@ composer require logger
 
 ### Next
 
-[Cap 5](https://www.youtube.com/watch?v=xPjpoC1BNII&list=PLC8ntN5__iMIAy9V6XO37Dx_bQ5V7zc-h&index=5)
+[Cap 7](https://www.youtube.com/watch?v=Jw-vTsBJ30c&list=PLC8ntN5__iMIAy9V6XO37Dx_bQ5V7zc-h&index=7)

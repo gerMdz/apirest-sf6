@@ -1,0 +1,10 @@
+App\Entity\Libro:
+    properties:
+        title:
+            - NotBlank: ~
+            - Length:
+                  min: 3
+                  max: 50
+                  minMessage: 'No puede ser menor a {{ limit }} letras'
+                  maxMessage: 'No puede ser mayor a {{ limit }} letras'
+                  allowEmptyString: false

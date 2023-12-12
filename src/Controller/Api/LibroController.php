@@ -8,6 +8,8 @@ namespace App\Controller\Api;
 //use App\Service\Book\GetBook;
 //use App\Service\Book\BookFormProcessor;
 //use App\Service\Utils\Security;
+use App\Entity\Libro;
+use App\Form\Type\LibroFormType;
 use App\Repository\LibroRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -25,7 +27,7 @@ class LibroController extends AbstractFOSRestController
     #[ViewAttribute(serializerGroups: ['libro'], serializerEnableMaxDepthChecks: true)]
     public function getAction(
         LibroRepository $bookRepository,
-        Request        $request,
+        Request         $request,
 //        Security       $security
     )
     {
@@ -63,20 +65,32 @@ class LibroController extends AbstractFOSRestController
      * @param BookFormProcessor $bookFormProcessor
      * @param Request $request
      * @param EntityManagerInterface $em
-     * @return View
      */
     #[Post(path: "/libros")]
     #[ViewAttribute(serializerGroups: ['book'], serializerEnableMaxDepthChecks: true)]
     public function postAction(
-        BookFormProcessor $bookFormProcessor,
-        Request           $request,
+//        BookFormProcessor      $bookFormProcessor,
+        Request                $request,
         EntityManagerInterface $em
     )
     {
-        [$book, $error] = ($bookFormProcessor)($request);
-        $statusCode = $book ? Response::HTTP_CREATED : Response::HTTP_BAD_REQUEST;
-        $data = $book ?? $error;
-        return View::create($data, $statusCode);
+        $libro = new Libro();
+        $form = $this->createForm(LibroFormType::class, $libro);
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid()){
+            $em->persist($libro);
+            $em->flush();
+            return $libro;
+        }
+
+//        [$book, $error] = ($bookFormProcessor)($request);
+//        $statusCode = $book ? Response::HTTP_CREATED : Response::HTTP_BAD_REQUEST;
+//        $data = $book ?? $error;
+//        return View::create($data, $statusCode);
+
+        return $form;
     }
 
     #[Put(path: "/libros/{id}")]

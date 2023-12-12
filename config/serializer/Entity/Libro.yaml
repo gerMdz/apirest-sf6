@@ -6,16 +6,16 @@ App\Entity\Libro:
       groups: ['libro']
     image:
       groups: ['libro']
-    categories:
-      groups: ['libro']
-    authors:
-      groups: ['libro']
-    description:
-      groups: ['libro']
-    score:
-      groups: ['libro']
-    readAtAsString:
-      groups: ['libro']
-      serialized_name: readAt
-    createdAt:
-      groups: ['libro']
+#    categories:
+#      groups: ['libro']
+#    authors:
+#      groups: ['libro']
+#    description:
+#      groups: ['libro']
+#    score:
+#      groups: ['libro']
+#    readAtAsString:
+#      groups: ['libro']
+#      serialized_name: readAt
+#    createdAt:
+#      groups: ['libro']
