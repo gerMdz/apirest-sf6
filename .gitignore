@@ -12,3 +12,5 @@
 /.idea
 /.php-version
 /migrations/
+/public/storage/default/
+/public/api/storage/default/
