@@ -2,7 +2,7 @@
 
 namespace App\Form\Type;
 
-use App\Entity\Libro;
+use App\Form\Model\LibroDto;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -13,7 +13,7 @@ class LibroFormType extends AbstractType
     {
         $builder
             ->add('title')
-            ->add('image', null, [
+            ->add('base64Image', null, [
                 'required' => false
             ])
         ;
@@ -22,7 +22,7 @@ class LibroFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => Libro::class,
+            'data_class' => LibroDto::class,
         ]);
     }
 

@@ -9,6 +9,7 @@ namespace App\Controller\Api;
 //use App\Service\Book\BookFormProcessor;
 //use App\Service\Utils\Security;
 use App\Entity\Libro;
+use App\Form\Model\LibroDto;
 use App\Form\Type\LibroFormType;
 use App\Repository\LibroRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,6 +18,9 @@ use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations\{Delete, Get, Patch, Post, Put};
 use FOS\RestBundle\Controller\Annotations\View as ViewAttribute;
 use FOS\RestBundle\View\View;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\FilesystemOperator;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -65,21 +69,35 @@ class LibroController extends AbstractFOSRestController
      * @param BookFormProcessor $bookFormProcessor
      * @param Request $request
      * @param EntityManagerInterface $em
+     * @throws FilesystemException
      */
     #[Post(path: "/libros")]
     #[ViewAttribute(serializerGroups: ['book'], serializerEnableMaxDepthChecks: true)]
     public function postAction(
-//        BookFormProcessor      $bookFormProcessor,
         Request                $request,
-        EntityManagerInterface $em
-    )
+        EntityManagerInterface $em,
+        FilesystemOperator     $defaultStorage
+    ): FormInterface|Libro
     {
-        $libro = new Libro();
-        $form = $this->createForm(LibroFormType::class, $libro);
+        $libroDto = new LibroDto();
+        $form = $this->createForm(LibroFormType::class, $libroDto);
 
         $form->handleRequest($request);
 
-        if($form->isSubmitted() && $form->isValid()){
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $extension = explode('/', mime_content_type($libroDto->base64Image))[1];
+
+            $data = explode(',', $libroDto->base64Image);
+            $fileName = sprintf('%s.%s', uniqid('image_', true),$extension);
+
+            $defaultStorage->write($fileName, base64_decode($data[1]));
+
+
+            $libro = new Libro();
+            $libro->setTitle($libroDto->title);
+            $libro->setImage($fileName);
+
             $em->persist($libro);
             $em->flush();
             return $libro;

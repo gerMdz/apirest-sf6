@@ -1,4 +1,4 @@
-App\Entity\Libro:
+App\From\Model\LibroDto:
     properties:
         title:
             - NotBlank: ~
