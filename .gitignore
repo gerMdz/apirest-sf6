@@ -14,3 +14,9 @@
 /migrations/
 /public/storage/default/
 /public/api/storage/default/
+
+###> symfony/phpunit-bridge ###
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###
+/.env.test

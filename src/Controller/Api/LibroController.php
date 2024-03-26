@@ -12,6 +12,7 @@ use App\Entity\Libro;
 use App\Form\Model\LibroDto;
 use App\Form\Type\LibroFormType;
 use App\Repository\LibroRepository;
+use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
@@ -66,17 +67,18 @@ class LibroController extends AbstractFOSRestController
     }
 
     /**
-     * @param BookFormProcessor $bookFormProcessor
      * @param Request $request
      * @param EntityManagerInterface $em
+     * @param FilesystemOperator $defaultStorage
+     * @return FormInterface|Libro
      * @throws FilesystemException
      */
     #[Post(path: "/libros")]
-    #[ViewAttribute(serializerGroups: ['book'], serializerEnableMaxDepthChecks: true)]
+    #[ViewAttribute(serializerGroups: ['libro'], serializerEnableMaxDepthChecks: true)]
     public function postAction(
         Request                $request,
         EntityManagerInterface $em,
-        FilesystemOperator     $defaultStorage
+        FileUploader           $fileUploader
     ): FormInterface|Libro
     {
         $libroDto = new LibroDto();
@@ -85,18 +87,13 @@ class LibroController extends AbstractFOSRestController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-            $extension = explode('/', mime_content_type($libroDto->base64Image))[1];
-
-            $data = explode(',', $libroDto->base64Image);
-            $fileName = sprintf('%s.%s', uniqid('image_', true),$extension);
-
-            $defaultStorage->write($fileName, base64_decode($data[1]));
-
-
             $libro = new Libro();
             $libro->setTitle($libroDto->title);
-            $libro->setImage($fileName);
+
+            if ($libroDto->base64Image) {
+                $fileName = $fileUploader->uploadBase64File($libroDto->base64Image);
+                $libro->setImage($fileName);
+            }
 
             $em->persist($libro);
             $em->flush();
