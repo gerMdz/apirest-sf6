@@ -8,15 +8,19 @@ namespace App\Controller\Api;
 //use App\Service\Book\GetBook;
 //use App\Service\Book\BookFormProcessor;
 //use App\Service\Utils\Security;
+use App\Entity\Category;
 use App\Entity\Libro;
+use App\Form\Model\CategoryDto;
 use App\Form\Model\LibroDto;
 use App\Form\Type\LibroFormType;
+use App\Repository\CategoryRepository;
 use App\Repository\LibroRepository;
 use App\Service\FileUploader;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
-use FOS\RestBundle\Controller\Annotations\{Delete, Get, Patch, Post, Put};
+use FOS\RestBundle\Controller\Annotations\{Delete, Get, Patch, Post};
 use FOS\RestBundle\Controller\Annotations\View as ViewAttribute;
 use FOS\RestBundle\View\View;
 use League\Flysystem\FilesystemException;
@@ -56,10 +60,10 @@ class LibroController extends AbstractFOSRestController
 
     #[Get(path: "/libros/{id}")]
     #[ViewAttribute(serializerGroups: ['libro'], serializerEnableMaxDepthChecks: true)]
-    public function getSingleAction(string $id, GetBook $getBook)
+    public function getSingleAction(string $id, Libro $libro)
     {
         try {
-            $book = ($getBook)($id);
+            $book = ($libro)($id);
         } catch (Exception) {
             return View::create('Book not found', Response::HTTP_BAD_REQUEST);
         }
@@ -108,22 +112,75 @@ class LibroController extends AbstractFOSRestController
         return $form;
     }
 
-    #[Put(path: "/libros/{id}")]
+    #[Post(path: "/libros/{id}", requirements: ['id' => '\d+'])]
     #[ViewAttribute(serializerGroups: ['book'], serializerEnableMaxDepthChecks: true)]
     public function editAction(
-        string            $id,
-        BookFormProcessor $bookFormProcessor,
-        Request           $request
+        int                    $id,
+        EntityManagerInterface $em,
+        LibroRepository        $libroRepository,
+        CategoryRepository     $categoryRepository,
+        Request                $request,
+        FileUploader           $fileUploader
     )
     {
-        try {
-            [$book, $error] = ($bookFormProcessor)($request, $id);
-            $statusCode = $book ? Response::HTTP_CREATED : Response::HTTP_BAD_REQUEST;
-            $data = $book ?? $error;
-            return View::create($data, $statusCode);
-        } catch (Throwable $e) {
-            return View::create('Book not found', Response::HTTP_BAD_REQUEST);
+        $libro = $libroRepository->find($id);
+        if (!$libro) {
+            return View::create('No se encontró el libro', Response::HTTP_BAD_REQUEST);
         }
+
+        $libroDto = LibroDto::crearDesdeLibro($libro);
+
+        $categoriesOriginal = new  ArrayCollection();
+
+        foreach ($libro->getCategories() as $category) {
+            $categoryDto = CategoryDto::crearDesdeCategory($category);
+            $libroDto->categories[] = $categoryDto;
+            $categoriesOriginal->add($categoryDto);
+        }
+
+        dd($libroDto);
+
+        $form = $this->createForm(LibroFormType::class, $libroDto);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            dd('147');
+            foreach ($categoriesOriginal as $categoryOriginalDto) {
+                if (!in_array($categoryOriginalDto, $libroDto->categories)) {
+                    $libro->removeCategory($categoryRepository->find($categoryOriginalDto->id));
+                }
+            }
+
+            foreach ($libroDto->categories as $newCategoryDto) {
+                if (!$categoriesOriginal->contains($newCategoryDto)) {
+                    $category = $categoryRepository->find($newCategoryDto->id ?? 0);
+
+                    if (!$category) {
+                        $category = new Category();
+                        $category->setName($newCategoryDto->name);
+                        $em->persist($category);
+                    }
+
+                    $libro->addCategory($category);
+                }
+            }
+
+            $libro->setTitle($libroDto->title);
+            if ($libroDto->base64Image) {
+                $fileName = $fileUploader->uploadBase64File($libroDto->base64Image);
+                $libro->setImage($fileName);
+            }
+            $em->persist($libro);
+            $em->flush();
+            return $this->json($libro);
+
+        }
+
+        return $form;
+
+
     }
 
     #[Patch(path: "/libros/{id}")]
