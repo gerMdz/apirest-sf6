@@ -21,9 +21,9 @@ class LibroDto
 
         $dto->title = $libro->getTitle();
         $dto->base64Image = $libro->getImage();
-        foreach ($libro->getCategories() as $category) {
-            $dto->categories[] = $category->getName();
-        }
+//        foreach ($libro->getCategories() as $category) {
+//            $dto->categories[] = $category;
+//        }
         return $dto;
 
 

@@ -12,6 +12,4 @@ composer require logger
 
 ### Next
 
-[Cap 9](https://youtu.be/akrxXdp9LdQ?si=b8gISqJMjr53V0dA&t=905)
-
-Revisar porque tengo un error desde el min 15
+[Cap 10](https://www.youtube.com/watch?v=Pu4Ua8XQRyA)

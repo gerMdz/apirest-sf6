@@ -11,6 +11,7 @@ class CategoryDto
 
     public static function crearDesdeCategory(Category $category): self
     {
+
         $dto = new self();
         $dto->id = $category->getId();
         $dto->name = $category->getName();

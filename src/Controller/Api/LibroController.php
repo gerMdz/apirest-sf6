@@ -128,28 +128,37 @@ class LibroController extends AbstractFOSRestController
             return View::create('No se encontró el libro', Response::HTTP_BAD_REQUEST);
         }
 
+
         $libroDto = LibroDto::crearDesdeLibro($libro);
+
 
         $categoriesOriginal = new  ArrayCollection();
 
+
         foreach ($libro->getCategories() as $category) {
+
             $categoryDto = CategoryDto::crearDesdeCategory($category);
+
             $libroDto->categories[] = $categoryDto;
+
             $categoriesOriginal->add($categoryDto);
         }
 
-        dd($libroDto);
+
 
         $form = $this->createForm(LibroFormType::class, $libroDto);
 
         $form->handleRequest($request);
+        if(!$form->isSubmitted()){
+            return new Response('', Response::HTTP_BAD_REQUEST);
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            dd('147');
             foreach ($categoriesOriginal as $categoryOriginalDto) {
                 if (!in_array($categoryOriginalDto, $libroDto->categories)) {
-                    $libro->removeCategory($categoryRepository->find($categoryOriginalDto->id));
+                    $category = $categoryRepository->find($categoryOriginalDto->id);
+                    $libro->removeCategory($category);
                 }
             }
 
@@ -168,13 +177,16 @@ class LibroController extends AbstractFOSRestController
             }
 
             $libro->setTitle($libroDto->title);
+
             if ($libroDto->base64Image) {
                 $fileName = $fileUploader->uploadBase64File($libroDto->base64Image);
                 $libro->setImage($fileName);
             }
             $em->persist($libro);
             $em->flush();
-            return $this->json($libro);
+            $em->refresh($libro);
+
+            return $libro;
 
         }
 
